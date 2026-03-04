@@ -1,6 +1,9 @@
 import math
 import numpy 
 
+import time
+import random
+
 #Problema 1
 u = 1.0
 k = 0
@@ -256,3 +259,54 @@ def my_continued_fraction_tan(x, epsilon=1e-10):
         return 1.0 / result
     
     return result
+
+
+# ============================================================
+# TESTARE SI BENCHMARK pt problema 3
+# ============================================================
+
+# Generare 10.000 de numere aleatoare in (-pi/2, pi/2)
+# Folosim math.pi pentru limite, dar numpy.tan pentru rezultate
+random.seed(42)
+pi_2 = math.pi / 2
+test_values = [random.uniform(-pi_2 + 1e-9, pi_2 - 1e-9) for _ in range(10000)]
+
+# ---- Metoda polinomiala ----
+start_poly = time.perf_counter()
+results_poly = [my_tan(x) for x in test_values]
+end_poly = time.perf_counter()
+time_poly = end_poly - start_poly
+
+# ---- Metoda fractii continue ----
+start_cf = time.perf_counter()
+results_cf = [my_continued_fraction_tan(x) for x in test_values]
+end_cf = time.perf_counter()
+time_cf = end_cf - start_cf
+
+# ---- Valori de referinta folosind NUMPY ----
+ref_values = [numpy.tan(x) for x in test_values]
+
+# ---- Calculul erorilor ----
+errors_poly = [abs(ref - approx) for ref, approx in zip(ref_values, results_poly)]
+errors_cf   = [abs(ref - approx) for ref, approx in zip(ref_values, results_cf)]
+
+# ---- Afisare rezultate ----
+print("\n" + "="*55)
+print("           COMPARATIE METODE - tan(x)")
+print("="*55)
+
+print(f"\n{'Metrica':<30} {'Polinomiala':>12} {'Fract. Continue':>15}")
+print("-"*55)
+print(f"{'Eroare medie':<30} {sum(errors_poly)/len(errors_poly):>12.2e} {sum(errors_cf)/len(errors_cf):>15.2e}")
+print(f"{'Eroare maxima':<30} {max(errors_poly):>12.2e} {max(errors_cf):>15.2e}")
+print(f"{'Eroare minima':<30} {min(errors_poly):>12.2e} {min(errors_cf):>15.2e}")
+print(f"{'Timp executie (s)':<30} {time_poly:>12.4f} {time_cf:>15.4f}")
+print("="*55)
+
+# ---- Afisare primele 5 valori ca exemplu ----
+print("\nExemple (primele 5 valori):")
+print(f"{'x':>12} {'numpy tan':>15} {'Polinomial':>15} {'Fract.Continue':>15} {'Err Poly':>12} {'Err CF':>12}")
+print("-"*85)
+for i in range(5):
+    x = test_values[i]
+    print(f"{x:>12.6f} {ref_values[i]:>15.10f} {results_poly[i]:>15.10f} {results_cf[i]:>15.10f} {errors_poly[i]:>12.2e} {errors_cf[i]:>12.2e}")
