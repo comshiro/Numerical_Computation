@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 ##EXERCITIUL 1##
 def calculeaza_vector_b(A, s, n):
@@ -14,33 +15,55 @@ def calculeaza_vector_b(A, s, n):
 def descompunere_qr_householder(A):
     n = A.shape[0]
     R = A.copy().astype(float)
-    Q = np.eye(n)
+    Q_tilde = np.eye(n)
+    u = np.zeros(n)
+    epsilon = 1e-12
 
-    for k in range(n - 1):
-        x = R[k:, k]
+    for r in range(n - 1):
+        # sigma = suma(a_ir^2)
+        sigma = 0.0
+        for i in range(r, n):
+            sigma += R[i, r] ** 2
 
-        norm_x = np.linalg.norm(x)
-        if norm_x == 0:
-            continue
+        if sigma <= epsilon:
+            break
 
-        semn = 1 if x[0] >= 0 else -1
-        alfa = semn * norm_x
+        # k = sqrt(sigma)
+        k = math.sqrt(sigma)
+        if R[r, r] > 0:
+            k = -k
 
-        u = x.copy()
-        u[0] += alfa
-        norm_u = np.linalg.norm(u)
+        # beta = sigma - k * a_rr
+        beta = sigma - k * R[r, r]
 
-        if norm_u == 0:
-            continue
+        # u_r = a_rr - k; u_i = a_ir, i = r+1...n
+        u[r] = R[r, r] - k
+        for i in range(r + 1, n):
+            u[i] = R[i, r]
 
-        v = u / norm_u
-        v = v.reshape(-1, 1)
+        for j in range(r + 1, n):
+            # gamma = (Ae_j, u) / beta
+            suma_A = 0.0
+            for i in range(r, n):
+                suma_A += u[i] * R[i, j]
+            gamma = suma_A / beta
 
-        H_k = np.eye(n - k) - 2 * (v @ v.T)
-        H_n = np.eye(n)
-        H_n[k:, k:] = H_k
-        R = H_n @ R
-        Q = Q @ H_n
+            for i in range(r, n):
+                R[i, j] = R[i, j] - gamma * u[i]
+
+        R[r, r] = k
+        for i in range(r + 1, n):
+            R[i, r] = 0.0
+
+        for j in range(n):
+            suma_Q = 0.0
+            for i in range(r, n):
+                suma_Q += u[i] * Q_tilde[i, j]
+            gamma = suma_Q / beta
+
+            for i in range(r, n):
+                Q_tilde[i, j] = Q_tilde[i, j] - gamma * u[i]
+    Q = Q_tilde.T
 
     return Q, R
 
