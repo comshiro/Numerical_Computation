@@ -72,12 +72,7 @@ def rezolva_tema_calcul_numeric():
     Ax_calc = np.zeros(n)
     for i in range(n):
         for j in range(n):
-            if i <= j:
-                val_A_init = A[i, j]
-            else:
-                val_A_init = A[j, i]
-
-            Ax_calc[i] += val_A_init * x_Chol[j]
+            Ax_calc[i] += A_init[i, j] * x_Chol[j]
 
     norma1 = np.linalg.norm(Ax_calc - b, ord=2)
     norma2 = np.linalg.norm(x_Chol - x_lib, ord=2)

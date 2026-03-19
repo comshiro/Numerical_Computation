@@ -136,7 +136,7 @@ def normalize_angle(x):
     return normalized
 
 
-# 4. Main function - applies everything in sequence
+# Main function - applies everything in sequence
 def my_tan(x):
     """
     Main entry point - handles any x value

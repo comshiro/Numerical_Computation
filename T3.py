@@ -2,7 +2,7 @@ import numpy as np
 import math
 
 ##EXERCITIUL 1##
-def calculeaza_vector_b(A, s, n):
+def calculeaza_vector_b(A, s, n): # A este matricea, s este vectorul solutie, n este dimensiunea
     b = np.zeros(n)
     for i in range(n):
         suma = 0
@@ -67,7 +67,7 @@ def descompunere_qr_householder(A):
 
     return Q, R
 
-##EXERCITIUL 3##
+##EXERCITIUL 3## Rx=Q_T*b 
 def substitutie_inapoi(R, y):
     n = R.shape[0]
     x = np.zeros(n)
@@ -97,6 +97,7 @@ def exercitiul_3(A, b):
     x_Householder = rezolva_sistem_qr(Q_h, R_h, b)
     norma_diferentei = np.linalg.norm(x_QR - x_Householder, ord=2)
 
+    print(f"Norma ||x_QR - x_Householder||_2: {norma_diferentei:.6e}")
     return x_QR, x_Householder, norma_diferentei
 
 ##EXERCITIUL 4##
@@ -112,8 +113,13 @@ def exercitiul_4(A_init, b_init, x_householder, x_QR, s):
     return err_rezidual_house, err_rezidual_qr, err_relativ_house, err_relativ_qr
 
 ##EXERCITIUL 5##
-def calculeaza_inversa_qr(Q, R):
+def calculeaza_inversa_qr(Q, R): #QRx_i = e_i => Rx_i = Q^T e_i
     n = R.shape[0]
+    epsilon = 1e-12
+
+    if np.any(np.abs(np.diag(R)) < epsilon):
+        raise ValueError(f"Matricea A este singulara sau aproape singulara pentru epsilon={epsilon}. Inversa nu se poate calcula.")
+
     A_inv = np.zeros((n, n))
     I = np.eye(n)
 
@@ -130,6 +136,7 @@ def exercitiul_5(A, Q, R):
     A_inv_bibl = np.linalg.inv(A)
 
     norma_diferentei = np.linalg.norm(A_inv_householder - A_inv_bibl)
+    print(f"Norma ||A_inv_householder - A_inv_bibl||_2: {norma_diferentei:.6e}")
 
     return A_inv_householder, A_inv_bibl, norma_diferentei
 
