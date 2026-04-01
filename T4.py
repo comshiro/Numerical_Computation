@@ -53,41 +53,46 @@ def rezolva_tema(index_sistem, p_precizie=5):
         return
 
     ###EXERCITIUL 4##
-    max_iter = 10000
-    x_GS = [0.0] * n
-    convergenta = False
+    k_max = 10000
+    x_c = [0.0] * n
+    x_p = [0.0] * n
+    k = 0
 
-    for k in range(max_iter):
-        max_err = 0.0
+    while True:
+        for i in range(n):
+            x_p[i] = x_c[i]
 
         for i in range(n):
             sum_val = 0.0
 
             if i >= p:
-                sum_val += d1[i - p] * x_GS[i - p]
+                sum_val += d1[i - p] * x_c[i - p]
             if i >= q:
-                sum_val += d2[i - q] * x_GS[i - q]
+                sum_val += d2[i - q] * x_c[i - q]
 
             if i + p < n:
-                sum_val += d1[i] * x_GS[i + p]
+                sum_val += d1[i] * x_p[i + p]
             if i + q < n:
-                sum_val += d2[i] * x_GS[i + q]
+                sum_val += d2[i] * x_p[i + q]
 
-            x_nou_i = (b[i] - sum_val) / d0[i]
+            x_c[i] = (b[i] - sum_val) / d0[i]
 
-            err = abs(x_nou_i - x_GS[i])
-            if err > max_err:
-                max_err = err
+        delta_x = 0.0
+        for i in range(n):
+            err = abs(x_c[i] - x_p[i])
+            if err > delta_x:
+                delta_x = err
 
-            x_GS[i] = x_nou_i
+        k += 1
 
-        if max_err < eps:
-            convergenta = True
-            print(f"4. Metoda Gauss-Seidel--> dupa {k + 1} iteratii.")
+        if not (delta_x >= eps and k <= k_max and delta_x <= 10 ** 10):
             break
 
-    if not convergenta:
-        print("4. EROARE: Metoda Gauss-Seidel NU e convergenta")
+    if delta_x < eps:
+        print(f"4. Metoda Gauss-Seidel a convers dupa {k} iteratii.")
+        x_GS = x_c
+    else:
+        print("4. EROARE: Divergenta (metoda nu a convers sau a depasit limita).")
         return
 
     ###EXERCITIUL 5##
