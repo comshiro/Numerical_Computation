@@ -1,81 +1,81 @@
 import numpy as np
 
+import numpy as np
+
 ###EXERCITIUL 1
 #################################
+
 def find_pivot(A):
+    #formula 1(cautarea in partea strict inferior triunghiulara)
+    # i = 2,...,n si j = 1,...,i-1 (0-indexed: i=1..n-1, j=0..i-1)
     n = A.shape[0]
-    p, q = 0, 1
+    p, q = 1, 0
     max_val = 0.0
-    for i in range(n):
-        for j in range(i + 1, n):   # j > i => triunghiul superior
+    for i in range(1, n):
+        for j in range(0, i):
             if abs(A[i, j]) > max_val:
                 max_val = abs(A[i, j])
-                p, q = i, j
+                p, q = i, j   # p > q (p = linie, q = coloana)
     return p, q, max_val
 
 def compute_tcs(A, p, q):
-    alpha = (A[q, q] - A[p, p]) / (2.0 * A[p, q])
+    #formula 3: alpha = (a_qq - a_pp) / (2 * a_pq)
+    alpha = (A[p, p] - A[q, q]) / (2.0 * A[p, q])
     semn_alpha = 1.0 if alpha >= 0 else -1.0
-    t = -alpha + semn_alpha * np.sqrt(alpha**2 + 1.0)   #formula (3)
-    c = 1.0 / np.sqrt(1.0 + t**2)                        #formula (4)
+    t = -alpha + semn_alpha * np.sqrt(alpha**2 + 1.0)   # formula (3)
+    c = 1.0 / np.sqrt(1.0 + t**2)                        # formula (4)
     s = t * c                                              # formula (4)
     return t, c, s
 
-def update_A(A, p, q, c, s):
+def update_A(A, p, q, t, c, s):
+    #formula 5
     n = A.shape[0]
     a_p = A[p, :].copy()
     a_q = A[q, :].copy()
 
-    #elemente off-diagonale (liniile/coloanele p si q, j != p, j != q)
     for j in range(n):
         if j == p or j == q:
             continue
-        A[p, j] =  c * a_p[j] - s * a_q[j]
-        A[j, p] =  A[p, j]                    # simetrie
-        A[q, j] =  s * a_p[j] + c * a_q[j]
-        A[j, q] =  A[q, j]                    # simetrie
+        A[p, j] =  c * a_p[j] + s * a_q[j]
+        A[j, p] =  A[p, j]                  #simetrie
+        A[q, j] = -s * a_p[j] + c * a_q[j]
+        A[j, q] =  A[q, j]                  #simetrie
 
-    #elemente diagonale (formula exacta din R*A*R^T)
-    A[p, p] =  c**2 * a_p[p] + s**2 * a_q[q] - 2.0 * c * s * a_p[q]
-    A[q, q] =  s**2 * a_p[p] + c**2 * a_q[q] + 2.0 * c * s * a_p[q]
-
-    #elementul pivot devine 0
+    A[p, p] = a_p[p] + t * a_p[q]
+    A[q, q] = a_q[q] - t * a_p[q]
     A[p, q] = 0.0
     A[q, p] = 0.0
-
     return A
 
 def update_U(U, p, q, c, s):
+    #foruma 7
     n = U.shape[0]
     for i in range(n):
         u_ip_vechi = U[i, p]
         u_iq_vechi = U[i, q]
-        U[i, p] =  c * u_ip_vechi - s * u_iq_vechi
-        U[i, q] =  s * u_ip_vechi + c * u_iq_vechi
+        U[i, p] =  c * u_ip_vechi + s * u_iq_vechi
+        U[i, q] = -s * u_ip_vechi + c * u_iq_vechi 
     return U
 
 def jacobi(A_init, eps=1e-10, k_max=10000):
     n = A_init.shape[0]
     A = A_init.copy().astype(float)
 
-    # k = 0; U = I_n
     k = 0
     U = np.eye(n)
 
-    #p, q (formula 1) si parametrii initiali (formule 3, 4)
+    #formula 1,3,4
     p, q, max_val = find_pivot(A)
     t, c, s = compute_tcs(A, p, q)
 
-    # while (A != matrice diagonala si k <= k_max)
     while max_val > eps and k <= k_max:
 
-        #formula (5): A = R_pq * A * R_pq^T, in-place
-        A = update_A(A, p, q, c, s)
+        #A = R_pq(theta) * A * R_pq^T(theta)-formula (5)
+        A = update_A(A, p, q, t, c, s)
 
-        #formula (7): U = U * R_pq^T, in-place
+        #U = U * R_pq^T(theta) -formula (7)
         U = update_U(U, p, q, c, s)
 
-        #p, q si parametrii (formule 1, 3, 4)
         p, q, max_val = find_pivot(A)
         if max_val > eps:
             t, c, s = compute_tcs(A, p, q)
@@ -99,7 +99,7 @@ print("=" * 55)
 print("\nMatricea initiala A_init:")
 print(A_init)
 
-eps = 1e-10
+eps   = 1e-10
 k_max = 10000
 
 eigenvalues, U, k, A_final = jacobi(A_init, eps=eps, k_max=k_max)
@@ -120,12 +120,11 @@ print("\nMatricea U (vectori proprii pe coloane):")
 print(np.round(U, 8))
 
 #verificare: ||A_init * U - U * Lambda||
-
 Lambda = np.diag(eigenvalues)
 norma = np.linalg.norm(A_init @ U - U @ Lambda)
 print(f"\nVerificare: ||A_init * U - U * Lambda|| = {norma:.2e}")
 
-# Referinta numpy
+#referinta numpy
 print("\n--- Referinta numpy.linalg.eigh ---")
 np_vals, _ = np.linalg.eigh(A_init)
 np_vals = np.sort(np_vals)[::-1]
