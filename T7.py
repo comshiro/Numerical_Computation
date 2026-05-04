@@ -106,7 +106,7 @@ def is_valid_root(coeffs, x, eps=EPSILON):
     return abs(Pv) < math.sqrt(eps)   
 
 
-def find_roots(coeffs, num_x0=60, eps=EPSILON):
+def find_roots(coeffs, num_x0=60, eps=1e-4):
     
     R = compute_R(coeffs)
     print(f"\n  Interval radacini: [-{R:.6f}, {R:.6f}]")
