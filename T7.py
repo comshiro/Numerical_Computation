@@ -5,7 +5,7 @@ import os
 
 EPSILON = 1e-9      
 KMAX    = 1000      
-DIV_LIMIT = 1e8     # limita de divergenta (|Δx| > DIV_LIMIT => divergenta)
+DIV_LIMIT = 1e8
 
 
 def horner(coeffs, v):
