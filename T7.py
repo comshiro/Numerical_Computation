@@ -1,5 +1,5 @@
 
-
+import numpy as np
 import math
 import os
 
@@ -12,7 +12,6 @@ def horner(coeffs, v):
    
     n = len(coeffs) - 1  
 
-    # -- Pasul 1: sirul b pentru P(v) --
     b = coeffs[0]     
     b_vals = [coeffs[0]]
     for i in range(1, n + 1):
@@ -20,8 +19,7 @@ def horner(coeffs, v):
         b_vals.append(b)
     Pv = b_vals[n]
 
-    # -- Pasul 2: sirul c pentru P'(v) --
-    # Aplicam Horner pe b_vals[0..n-1]
+    #Horner pe b_vals[0..n-1]
     if n >= 1:
         c = b_vals[0]
         c_vals = [b_vals[0]]
@@ -33,8 +31,7 @@ def horner(coeffs, v):
         dPv = 0.0
         c_vals = []
 
-    # -- Pasul 3: sirul d pentru P''(v) --
-    # Aplicam Horner pe c_vals[0..n-2]
+    #Horner pe c_vals[0..n-2]
     if n >= 2:
         d = c_vals[0]
         for i in range(1, n - 1):
@@ -103,7 +100,7 @@ def is_new_root(root, existing_roots, eps=EPSILON):
 
 def is_valid_root(coeffs, x, eps=EPSILON):
     Pv, _, _ = horner(coeffs, x)
-    return abs(Pv) < math.sqrt(eps)   
+    return abs(Pv) < eps   
 
 
 def find_roots(coeffs, num_x0=60, eps=1e-4):
@@ -111,7 +108,7 @@ def find_roots(coeffs, num_x0=60, eps=1e-4):
     R = compute_R(coeffs)
     print(f"\n  Interval radacini: [-{R:.6f}, {R:.6f}]")
 
-    x0_list = [R * (-1 + 2 * i / (num_x0 - 1)) for i in range(num_x0)]
+    x0_list = np.linspace(-R, R, num_x0)
 
     results = []
 
@@ -134,7 +131,7 @@ def find_roots(coeffs, num_x0=60, eps=1e-4):
                     'iters_olver' : None,   
                     'found_by'   : 'Newton'
                 })
-            key = round(root_n, 8)
+            key = round(root_n, 4)
             if key not in all_results_newton or all_results_newton[key][1] > iters_n:
                 all_results_newton[key] = (root_n, iters_n)
 
@@ -147,13 +144,13 @@ def find_roots(coeffs, num_x0=60, eps=1e-4):
                     'iters_olver' : iters_o,
                     'found_by'   : 'Olver'
                 })
-            key = round(root_o, 8)
+            key = round(root_o, 4)
             if key not in all_results_olver or all_results_olver[key][1] > iters_o:
                 all_results_olver[key] = (root_o, iters_o)
 
     for entry in results:
         r = entry['root']
-        key = round(r, 8)
+        key = round(r, 4)
 
         if entry['iters_newton'] is None:
             if key in all_results_newton:
