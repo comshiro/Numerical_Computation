@@ -264,9 +264,9 @@ def save_to_file(results, coeffs, R, filename="radacini_distincte.txt"):
 
 
 def run_for_polynomial(name, coeffs, filename):
-    print("\n" + "█" * 68)
+    print("\n" + "-" * 68)
     print(f"  {name}")
-    print("█" * 68)
+    print("-" * 68)
 
     results, R = find_roots(coeffs)
     display_results(results, coeffs, R)
